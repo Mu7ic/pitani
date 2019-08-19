@@ -17,7 +17,7 @@ class DatabaseSeeder extends Seeder
             'lname'=>' ',
             'password'=>md5('12345678'),
             'phone_parents'=>' ',
-            'fio_parents'=>' ',
+            'fio_parents'=>0,
             'balance'=>0,
             'isAdmin'=>1,
             'isActive'=>1,
