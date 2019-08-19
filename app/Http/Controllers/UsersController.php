@@ -18,6 +18,15 @@ class UsersController extends Controller
     public function balance_list(){
         return BalanceHistory::all();
     }
+    //Одиночная выборка пользователя
+    public function getUser($id){
+        $user=Users::find($id);
+        if($user == null)
+            $response = ['error'=>true,'message'=>'User does not exist'];
+        else
+            $response = ['idUser'=>$user->id,'fname'=>$user->fname,'name'=>$user->name,'lname'=>$user->lname,'balance'=>$user->balance,'isActive'=>$user->isActive];
+        return response($response,202);
+    }
 
     public function food_select(Request $request){
         $foodselect=FoodSelect::where(['date'=>$request->date])->get();
@@ -41,6 +50,7 @@ class UsersController extends Controller
         return  Datefood::select(['zavtrak','obed','ujin'])->where(['date'=>$date])->first();
 
     }
+
 
 
 }

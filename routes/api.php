@@ -26,6 +26,8 @@ Route::middleware('auth:api')->group(function () {
 
     Route::post('/users/update', 'Api\CreateController@update_pass')->name('update');
     Route::get('/users/all', 'UsersController@users')->name('users_all');
+    Route::get('/users/all/{id}', 'UsersController@getUser')->name('getUser');
+
     Route::get('/list/balance', 'UsersController@balance_list')->name('balance_list');
     Route::post('/users/add', 'Api\CreateController@add_user');
     Route::post('/users/add/balance', 'Api\CreateController@add_balance');
