@@ -24,5 +24,12 @@ class DatabaseSeeder extends Seeder
             'created_at'=>now(),
             'updated_at'=>now(),
         ]);
+
+        App\Help::insert([
+            'id'=>1,
+            'text'=>'Test',
+            'created_at'=>now(),
+            'updated_at'=>now(),
+        ]);
     }
 }

@@ -30,11 +30,39 @@ class CreateController extends BaseController
             'phone_parents' => 'required|integer',
             'password' => 'required|string',
         ]))
-            $result = $this->setUsers($request);
+            $check_pass=Users::where(['password'=>md5($request->get('password'))])->first();
+            if($check_pass==null) {
+                $this->setUsers($request);
+                $response = ['error' => false, 'message' => 'User successfuly added'];
+            }else
+                $response=['error'=>true,'message'=>'Please choose another password'];
 
-        $response = ['error' => false, 'message' => 'User successfuly added'];
-        if ($result)
-            return response($request, 200);
+
+            return response($response, 200);
+    }
+
+    public function update_users(Request $request)
+    {
+
+        if ($request->validate([
+            'id'=>'required|integer',
+            'name' => 'required|string',
+            'fname' => 'required|string',
+            'lname' => '',
+            'fio_parents' => 'required|string',
+            'phone_parents' => 'required|integer',
+            'password' => 'required|string',
+
+        ]))
+
+                $update=$this->updateUsers($request);
+                if($update)
+                $response = ['error' => false, 'message' => 'User successfuly updated'];
+                else
+                $response=['error'=>true,'message'=>'Please send the correct id'];
+
+
+            return response($response, 200);
     }
 
     //Добавка баланса
@@ -133,6 +161,25 @@ class CreateController extends BaseController
             'created_at' => date("Y-m-d H:i:s"),
             'update_at' => date("Y-m-d H:i:s"),
         ]);
+        if ($sub->save())
+            return true;
+        return false;
+    }
+    //Создаем пользователя
+    private function updateUsers($request)
+    {
+        $sub=Users::find($request->get('id'));
+        if(!$sub==null){
+            $sub->name=$request->get('name');
+            $sub->fname=$request->get('fname');
+            $sub->lname=$request->get('lname');
+            $sub->fio_parents=$request->get('fio_parents');
+            $sub->phone_parents=$request->get('phone_parents');
+            $sub->password=md5($request->get('password'));
+
+        }else
+            return false;
+
         if ($sub->save())
             return true;
         return false;
