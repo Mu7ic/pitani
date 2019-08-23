@@ -40,6 +40,7 @@ class UsersController extends Controller
 
     public function food_select(Request $request){
         $foodselect=FoodSelect::where(['date'=>$request->date])->get();
+        if(!empty($foodselect)){
         $zavtrak=0;$obed=0;$ujin=0;
         foreach ($foodselect as $food){
             if($food->zavtrak==1)
@@ -52,6 +53,8 @@ class UsersController extends Controller
         $price=$this->getDayPrice($request->date);
         $summa=($zavtrak*$price->zavtrak) + ($obed * $price->obed) +($ujin * $price->ujin);
         $response=['count_zavtrak'=>$zavtrak,'count_obed'=>$obed,'count_ujin'=>$ujin,'summa'=>$summa];
+        }
+        else $response=['error'=>true,'message'=>'Date is empty in database'];
 
         return response($response,202);
     }
