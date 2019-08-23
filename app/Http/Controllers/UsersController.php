@@ -13,7 +13,7 @@ class UsersController extends Controller
 {
 
     public function users(){
-        return Users::where(['isAdmin'=>0])->get();
+        return Users::where(['isAdmin'=>0,'isActive'=>1])->get();
     }
     //Список пополнения
     public function balance_list(){
