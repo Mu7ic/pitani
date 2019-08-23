@@ -88,6 +88,8 @@ class CreateController extends BaseController
             $result = $this->setBalance($request);
         if($result)
         $response = ['error' => false, 'message' => 'Money has been added!'];
+        else
+            $response=['error'=>true,'message'=>'User does not exists'];
             return response($response, 200);
     }
 
@@ -222,7 +224,7 @@ class CreateController extends BaseController
         $date = $request->get('date');
         $money = $request->get('money');
         $user_id = $request->get('user_id');
-        // Добавляем в историю
+        $user=Users::find($user_id);
         $food = new BalanceHistory([
             'date' => $date,
             'user_id' => $user_id,
@@ -230,13 +232,12 @@ class CreateController extends BaseController
             'created_at' => date("Y-m-d H:i:s"),
             'update_at' => date("Y-m-d H:i:s"),
         ]);
-        // Обновляем баланс
-        if ($food->save()){
-            $user=Users::findOrFail($user_id);
-            $user->balance=$user->balance+$money;
-            if($user->update())
-            return true;
+        if(!empty($user)){
+            if ($food->save()){
+                return true;
+            }
         }
+
         return false;
     }
 
