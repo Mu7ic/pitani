@@ -30,7 +30,7 @@ class UsersController extends Controller
     }
 
     public function checkPass($password){
-        $user=Users::where(['password'=>$password])->first();
+        $user=Users::where(['password'=>md5($password)])->first();
         if(!empty($user))
             $response=['error'=>true,'message'=>'Password has exist'];
         else
