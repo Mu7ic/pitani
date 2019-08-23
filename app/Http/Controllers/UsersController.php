@@ -38,25 +38,29 @@ class UsersController extends Controller
         return response($response,202);
     }
 
-    public function food_select(Request $request){
-        $foodselect=FoodSelect::where(['date'=>$request->date])->get();
-        if(!empty($foodselect)){
-        $zavtrak=0;$obed=0;$ujin=0;
-        foreach ($foodselect as $food){
-            if($food->zavtrak==1)
-                $zavtrak++;
-            if($food->obed==1)
-                $obed++;
-            if($food->ujin==1)
-                $ujin++;
-        }
-        $price=$this->getDayPrice($request->date);
-        $summa=($zavtrak*$price->zavtrak) + ($obed * $price->obed) +($ujin * $price->ujin);
-        $response=['count_zavtrak'=>$zavtrak,'count_obed'=>$obed,'count_ujin'=>$ujin,'summa'=>$summa];
-        }
-        else $response=['error'=>true,'message'=>'Date is empty in database'];
+    public function food_select(Request $request)
+    {
+        $foodselect = FoodSelect::where(['date' => $request->date])->get();
+        if (!empty($foodselect)) {
+            $zavtrak = 0;
+            $obed = 0;
+            $ujin = 0;
+            foreach ($foodselect as $food) {
+                if(!empty($food)){
+                if ($food->zavtrak == 1)
+                    $zavtrak++;
+                if ($food->obed == 1)
+                    $obed++;
+                if ($food->ujin == 1)
+                    $ujin++;
+                }
+            }
+            !empty($foodselect) ? $price = $this->getDayPrice($request->date) : $price=0;
+            !empty($foodselect) ? $summa = ($zavtrak * !empty($price->zavtrak) ? $price->zavtrak : 0) + ($obed * !empty($price->obed) ? $price->obed : 0 ) + ($ujin * !empty($price->ujin) ? $price->ujin : 0 ) : $summa=0;
+            $response = ['count_zavtrak' => $zavtrak, 'count_obed' => $obed, 'count_ujin' => $ujin, 'summa' => $summa];
+        } else $response = ['error' => true, 'message' => 'Date is empty in database'];
 
-        return response($response,202);
+        return response($response, 202);
     }
 
     public function getText(){
