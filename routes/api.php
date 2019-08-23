@@ -33,8 +33,12 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/check/{password}', 'UsersController@checkPass')->name('checkPass');
 
     Route::get('/list/balance', 'UsersController@balance_list')->name('balance_list');
-    Route::post('/users/add', 'Api\CreateController@add_user');
-    Route::post('/users/add/balance', 'Api\CreateController@add_balance');
+    Route::post('/users/add', 'Api\CreateController@add_user')->name('add_user');
+    Route::post('/users/delete', 'Api\CreateController@user_delete')->name('delete_user');
+
+    Route::post('/users/add/balance', 'Api\CreateController@add_balance')->name('add_balance');
+
+    Route::get('/users/report/{id}/{start_date}/{end_date}', 'UsersController@getBalance')->name('getReports');
 
     Route::post('/users/select/food/day', 'Api\CreateController@food_day');
     Route::get('/select/food/day/{date}', 'UsersController@food_select');

@@ -65,6 +65,17 @@ class CreateController extends BaseController
             return response($response, 200);
     }
 
+    public function user_delete(Request $request){
+        if ($request->validate([
+            'id'=>'required|integer',
+        ]))
+            $del=$this->deleteUsers($request->get('id'));
+          if($del)
+              return response(['error'=>false,'message'=>'user is deactivated'],202);
+          else
+              return response(['error'=>true,'mesage'=>'Something went wrong, or user no exist'],202);
+    }
+
     //Добавка баланса
     public function add_balance(Request $request)
     {
@@ -248,6 +259,15 @@ class CreateController extends BaseController
         ]);
         // Обновляем баланс
         if ($food->save())
+            return true;
+        return false;
+    }
+
+    private function deleteUsers($id){
+        $user=Users::find($id);
+        if($user->isActive==1)
+            $user->isActive=0;
+        if($user->save())
             return true;
         return false;
     }
