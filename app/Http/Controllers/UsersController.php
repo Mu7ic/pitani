@@ -103,15 +103,15 @@ class UsersController extends Controller
                 foreach ($database as $date) {
                     $sena = $this->getDayPrice($date->date);
                     if ($date->zavtrak == 1) {
-                        $summa_z += $sena->zavtrak;
+                        $summa_z += !empty($sena->zavtrak) ? $sena->zavtrak : 0;
                     }
 
                     if ($date->obed == 1) {
-                        $summa_o += $sena->obed;
+                        $summa_o += !empty($sena->obed) ? $sena->obed : 0;
                     }
 
                     if ($date->ujin == 1) {
-                        $summa_u += $sena->ujin;
+                        $summa_u += !empty($sena->ujin) ? $sena->ujin : 0;
                     }
                     $sena = ($date->zavtrak == 1 ? $sena->zavtrak : 0) + ($date->obed == 1 ? $sena->obed : 0) + ($date->ujin == 1 ? $sena->ujin : 0);
                     $summaAll = $summa_z + $summa_o + $summa_u;
