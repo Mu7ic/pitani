@@ -33,6 +33,9 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/check/{password}', 'UsersController@checkPass')->name('checkPass');
 
     Route::get('/list/balance', 'UsersController@balance_list')->name('balance_list');
+
+    Route::get('/users/balance/{id}', 'UsersController@balance')->name('balance');
+
     Route::post('/users/add', 'Api\CreateController@add_user')->name('add_user');
     Route::post('/users/delete', 'Api\CreateController@user_delete')->name('delete_user');
 

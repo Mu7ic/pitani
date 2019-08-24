@@ -158,24 +158,27 @@ class UsersController extends Controller
         return $summa;
     }
 
+    public function balance($id){
+        return $this->getBalanceSumm($id) - $this->checkEatedMoney($id);
+    }
+
     public function checkEatedMoney($id){
         $database = FoodSelect::where(['user_id' => $id])->get();
-        $summa=0;$count_obed=0;$count_zavtrak=0;$count_ujin=0;
+        $summa=0;
         foreach ($database as $date){
             $sena=$this->getDayPrice($date->date);
-            if($date->zavtrak==1){
+            if(!empty($sena)){
+            if($date->zavtrak==1)
                 $summa+=!empty($sena->zavtrak) ? $sena->zavtrak : 0;
-                $count_zavtrak++;
-            }
 
-            if($date->obed==1){
+
+            if($date->obed==1)
                 $summa+=!empty($sena->obed) ? $sena->obed : 0;
-                $count_obed++;
-            }
 
-            if($date->ujin==1){
-                $count_ujin++;
+
+            if($date->ujin==1)
                 $summa+=!empty($sena->ujin) ? $sena->ujin : 0;
+
             }
         }
         return $summa;
