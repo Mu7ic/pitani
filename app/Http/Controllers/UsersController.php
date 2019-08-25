@@ -102,6 +102,7 @@ class UsersController extends Controller
                 if(!empty($database)){
                 foreach ($database as $date) {
                     $sena = $this->getDayPrice($date->date);
+                    if(!empty($sena)){
                     if ($date->zavtrak == 1) {
                         $summa_z += !empty($sena->zavtrak) ? $sena->zavtrak : 0;
                     }
@@ -125,6 +126,7 @@ class UsersController extends Controller
                         //x'balanceHistory'=>round($balanceHistory,2),
                         'ostatok' => round($balanceHistory - $summaAll, 2),
                     ];
+                }
                 }
             }
                 $response=['reports'=>!empty($array) ? $array : null,'date_start'=>$start_date,'end_date'=>$end_date,'v_ostatok'=>$balanceCurrent-$eated_money,];
