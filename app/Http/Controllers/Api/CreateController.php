@@ -119,7 +119,7 @@ class CreateController extends BaseController
             'zavtrak' => 'required|integer',
             'obed' => 'required|integer',
             'ujin' => 'required|integer',
-        ]))
+        ])){
             $result = $this->setFood($request);
 
         if ($result)
@@ -128,7 +128,7 @@ class CreateController extends BaseController
             $response = ['error'=>true,'message'=>'This date already taken'];
 
         return response($response, 200);
-
+        }
     }
 
     // Set Food in a Day
@@ -212,7 +212,7 @@ class CreateController extends BaseController
         $zavtrak = $request->get('zavtrak');
         $obed = $request->get('obed');
         $ujin = $request->get('ujin');
-        if(empty(Datefood::where(['date'=>$date]))){
+        if(empty(Datefood::where(['date'=>$date])->first())){
         $food = new Datefood([
             'date' => $date,
             'zavtrak' => $zavtrak,
