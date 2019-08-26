@@ -17,7 +17,7 @@ class UsersController extends Controller
     }
     //Список пополнения
     public function balance_list(){
-        $balance=BalanceHistory::orderBy('date', 'ASC')->get();
+        $balance=BalanceHistory::orderBy('date', 'DESC')->get();
         foreach ($balance as $bal) {
             $user=Users::find($bal->user_id);
             $response[]=['id'=>$bal->id,'fio'=>$user->fname.' '.$user->name.' '.$user->lname,'money'=>$bal->money,'date'=>$bal->date];
