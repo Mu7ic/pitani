@@ -45,6 +45,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::post('/users/select/food/day', 'Api\CreateController@food_day');
     Route::get('/select/food/day/{date}', 'UsersController@food_select');
+    Route::post('/select/food/day/{date}', 'Api\CreateController@food_day_update');
 
     Route::post('/food/create', 'Api\CreateController@food_create')->name('food_create');
     Route::put('/food/update/{id}', 'Api\CreateController@food_update')->name('food_update');

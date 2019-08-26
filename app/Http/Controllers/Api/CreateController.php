@@ -212,7 +212,7 @@ class CreateController extends BaseController
         $zavtrak = $request->get('zavtrak');
         $obed = $request->get('obed');
         $ujin = $request->get('ujin');
-        if(!empty(Datefood::where(['date'=>$date]))){
+        if(empty(Datefood::where(['date'=>$date]))){
         $food = new Datefood([
             'date' => $date,
             'zavtrak' => $zavtrak,
@@ -227,6 +227,29 @@ class CreateController extends BaseController
         }
         return false;
     }
+
+    public function food_day_update($date, Request $request)
+    {
+
+        if ($request->validate([
+            'zavtrak' => 'integer',
+            'obed' => 'integer',
+            'ujin' => 'integer',
+        ])) {
+            $zavtrak = $request->get('zavtrak');
+            $obed = $request->get('obed');
+            $ujin = $request->get('ujin');
+            $food = Datefood::where('date', $date)->first();
+            $food->zavtrak = $zavtrak;
+            $food->obed = $obed;
+            $food->ujin = $ujin;
+            $food->updated_at= date("Y-m-d H:i:s");
+            if ($food->save())
+                return response(['error' => false, 'message' => 'The date is updated'], 200);
+        }
+        return response(['error' => true, 'message' => 'Check the data please'], 200);
+    }
+
    // Пополнения счета пользователя
     private function setBalance($request)
     {
