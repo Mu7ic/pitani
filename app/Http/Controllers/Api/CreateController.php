@@ -124,6 +124,9 @@ class CreateController extends BaseController
 
         if ($result)
             $response = ['message' => 'Food has been created!'];
+        else
+            $response = ['error'=>true,'message'=>'This date already taken'];
+
         return response($response, 200);
 
     }
@@ -209,6 +212,7 @@ class CreateController extends BaseController
         $zavtrak = $request->get('zavtrak');
         $obed = $request->get('obed');
         $ujin = $request->get('ujin');
+        if(!empty(Datefood::where(['date'=>$date]))){
         $food = new Datefood([
             'date' => $date,
             'zavtrak' => $zavtrak,
@@ -220,6 +224,7 @@ class CreateController extends BaseController
 
         if ($food->save())
             return true;
+        }
         return false;
     }
    // Пополнения счета пользователя
