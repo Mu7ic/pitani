@@ -150,9 +150,11 @@ class CreateController extends BaseController
             'ujin' => 'integer',
         ]))
             $result = $this->setFoodDay($request);
-
-
+        if($result){
         $response = ['message' => 'Food with date has been created!'];
+        }else{
+            $response=['error'=>true,'message'=>'Date is exist in base!'];
+        }
         return response($response, 200);
 
     }
@@ -248,7 +250,7 @@ class CreateController extends BaseController
         $zavtrak = $request->get('zavtrak');
         $obed = $request->get('obed');
         $ujin = $request->get('ujin');
-        // Добавляем в историю
+        if($this->dateExists($date,$user_id)){
         $food = new FoodSelect([
             'date' => $date,
             'user_id' => $user_id,
@@ -258,8 +260,17 @@ class CreateController extends BaseController
             'created_at' => date("Y-m-d H:i:s"),
             'update_at' => date("Y-m-d H:i:s"),
         ]);
+
         // Обновляем баланс
         if ($food->save())
+            return true;
+        }
+        return false;
+    }
+
+    private function dateExists($date,$id){
+        $food=FoodSelect::where(['date'=>$date,'id'=>$id])->first();
+        if(!empty($food))
             return true;
         return false;
     }
