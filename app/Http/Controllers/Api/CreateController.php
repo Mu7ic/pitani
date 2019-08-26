@@ -142,6 +142,7 @@ class CreateController extends BaseController
     // Set Food in a Day
     public function food_day(Request $request)
     {
+        $today=date('Y-m-d');
         if ($request->validate([
             'date' => 'required|date',
             'user_id'=>'required|integer',
@@ -150,10 +151,11 @@ class CreateController extends BaseController
             'ujin' => 'integer',
         ]))
             $result = $this->setFoodDay($request);
+        $date=$request->get('date');
         if($result){
         $response = ['message' => 'Food with date has been created!'];
         }else{
-            $response=['error'=>true,'message'=>'Date is exist in base!'];
+            $response=['error'=>true,'message'=>'Date is exist in base or you send past days'];
         }
         return response($response, 200);
 
@@ -245,34 +247,38 @@ class CreateController extends BaseController
 
     private function setFoodDay($request)
     {
+        $date_now = date('Y-m-d');
+
         $date = $request->get('date');
         $user_id = $request->get('user_id');
         $zavtrak = $request->get('zavtrak');
         $obed = $request->get('obed');
         $ujin = $request->get('ujin');
-        if($this->dateExists($date,$user_id)){
-        $food = new FoodSelect([
-            'date' => $date,
-            'user_id' => $user_id,
-            'zavtrak' => $zavtrak,
-            'obed' => $obed,
-            'ujin' => $ujin,
-            'created_at' => date("Y-m-d H:i:s"),
-            'update_at' => date("Y-m-d H:i:s"),
-        ]);
+        if ($date>=$date_now) {
+            if ($this->dateExists($date, $user_id)) {
+                $food = new FoodSelect([
+                    'date' => $date,
+                    'user_id' => $user_id,
+                    'zavtrak' => $zavtrak,
+                    'obed' => $obed,
+                    'ujin' => $ujin,
+                    'created_at' => date("Y-m-d H:i:s"),
+                    'update_at' => date("Y-m-d H:i:s"),
+                ]);
 
-        // Обновляем баланс
-        if ($food->save())
-            return true;
+                // Обновляем баланс
+                if ($food->save())
+                    return true;
+            }
         }
         return false;
     }
 
     private function dateExists($date,$id){
-        $food=FoodSelect::where(['date'=>$date,'id'=>$id])->first();
+        $food=FoodSelect::where(['date'=>$date,'user_id'=>$id])->first();
         if(!empty($food))
-            return true;
-        return false;
+            return false;
+        return true;
     }
 
     private function deleteUsers($id){

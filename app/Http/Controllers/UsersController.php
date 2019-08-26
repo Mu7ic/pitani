@@ -94,7 +94,7 @@ class UsersController extends Controller
 
 
             if(!is_null($end_date)) {
-                $database = FoodSelect::where(['user_id' => $id])->whereBetween('date', [$start_date, $end_date])->get();
+                $database = FoodSelect::where(['user_id' => $id])->whereBetween('date', [$start_date, $end_date])->orderBy('date', 'ASC')->get();
                 $summaAll = 0;
                 $summa_z = 0;
                 $summa_o = 0;
