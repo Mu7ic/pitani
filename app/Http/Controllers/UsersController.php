@@ -62,7 +62,7 @@ class UsersController extends Controller
             }
             !empty($foodselect) ? $price = $this->getDayPrice($request->date) : $price=0;
             !empty($foodselect) ? $summa = ($zavtrak * !empty($price->zavtrak) ? $price->zavtrak : 0) + ($obed * !empty($price->obed) ? $price->obed : 0 ) + ($ujin * !empty($price->ujin) ? $price->ujin : 0 ) : $summa=0;
-            $response = ['count_zavtrak' => $zavtrak, 'count_obed' => $obed, 'count_ujin' => $ujin, 'summa' => $summa];
+            $response = ['count_zavtrak' => $zavtrak, 'count_obed' => $obed, 'count_ujin' => $ujin, 'sena_zavtrak'=>!empty($price->zavtrak) ? $price->zavtrak : 0, 'sena_obed'=>!empty($price->obed) ? $price->obed : 0,'sena_ujin'=>!empty($price->ujin) ? $price->ujin : 0, 'summa' => $summa];
         } else $response = ['error' => true, 'message' => 'Date is empty in database'];
 
         return response($response, 202);
