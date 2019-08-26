@@ -84,7 +84,8 @@ class UsersController extends Controller
     }
 
 
-    public function getBalance($id,$start_date,$end_date){
+    public function getBalance($id,$start_date,$end_dat){
+        $end_date=date('Y-m-d');
         if(isset($id) && isset($start_date)){
 
             $v_ostatok=$this->getSummaWithDate($id,$start_date,$end_date);
@@ -124,12 +125,12 @@ class UsersController extends Controller
                     //$v_ostatok=$v_ostatok-$summaAll;
                     $array[] = [
                         'date' => $date->date,
-                        'balanceHistory' => $balanceCurrent - $summaAll - $v_ostatok + $sena,
+                        'balanceHistory' => $balanceCurrent - $summaAll + $sena,
                         //'currentBalance'=>$balanceCurrent-$summaAll,
                         //'summaBetween'=>$v_ostatok,
                         'summa' => round($sena, 2),
                         //x'balanceHistory'=>round($balanceHistory,2),
-                        'ostatok' => round($balanceHistory - $summaAll, 2),
+                        'ostatok' => round($balanceCurrent - $summaAll, 2),
                     ];
                 }
                 }
@@ -142,7 +143,7 @@ class UsersController extends Controller
     }
 
     private function getSummaWithDate($id,$start_date,$end_date){
-        $database = FoodSelect::where(['user_id' => $id])->whereNotBetween('date', [$start_date, $end_date])->get();
+        $database = FoodSelect::where(['user_id' => $id])->whereBetween('date', [$start_date, $end_date])->get();
         $summa=0;$count_obed=0;$count_zavtrak=0;$count_ujin=0;
         foreach ($database as $date){
             $sena=$this->getDayPrice($date->date);
