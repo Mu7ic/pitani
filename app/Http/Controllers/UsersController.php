@@ -170,7 +170,7 @@ class UsersController extends Controller
     }
 
     public function checkEatedMoney($id){
-        $database = FoodSelect::where(['user_id' => $id])->get();
+        $database = FoodSelect::where(['user_id' => $id])->where('date','<=',date('Y-m-d'))->get();
         $summa=0;
         foreach ($database as $date){
             $sena=$this->getDayPrice($date->date);
