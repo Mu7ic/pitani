@@ -34,8 +34,6 @@ class UsersController extends Controller
                 'fname'=>$user->fname,
                 'name'=>$user->name,
                 'lname'=>$user->lname,
-                'balance'=>$user->balance,
-                'isActive'=>$user->isActive,
                 'fio_parents'=>$user->fio_parents,
                 'phone_parents'=>$user->phone_parents,
             ];
