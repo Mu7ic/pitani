@@ -30,7 +30,15 @@ class UsersController extends Controller
         if($user == null)
             $response = ['error'=>true,'message'=>'User does not exist'];
         else
-            $response = ['idUser'=>$user->id,'fname'=>$user->fname,'name'=>$user->name,'lname'=>$user->lname,'balance'=>$user->balance,'isActive'=>$user->isActive];
+            $response = ['idUser'=>$user->id,
+                'fname'=>$user->fname,
+                'name'=>$user->name,
+                'lname'=>$user->lname,
+                'balance'=>$user->balance,
+                'isActive'=>$user->isActive,
+                'fio_parents'=>$user->fio_parents,
+                'phone_parents'=>$user->phone_parents,
+            ];
         return response($response,202);
     }
 
@@ -84,62 +92,85 @@ class UsersController extends Controller
     }
 
 
-    public function getBalance($id,$start_date,$end_dat){
-        $end_date=date('Y-m-d');
-        if(isset($id) && isset($start_date)){
+    public function getBalance($id, $start_date, $end_dat)
+    {
+        $date = date('Y-m-d');
+        if ($date >= $end_dat) {
+            $end_date = $date;
+        } else
+            $end_date = $end_dat;
+        if (isset($id) && isset($start_date)) {
 
-            $v_ostatok=$this->getSummaWithDate($id,$start_date,$end_date);
+            $v_ostatok = $this->getSummaWithDate($id, $start_date, $end_date);
+
+
+            $balanceList = $this->getBalanceList($id, $start_date, $end_date);
 
             //eated_money
-            $eated_money=$this->checkEatedMoney($id);
+            $eated_money = $this->checkEatedMoney($id);
 
             //summa balanca
-            $balanceCurrent=$this->getBalanceSumm($id);
+            $balanceCurrent = $this->getBalanceSumm($id);
 
-            $balanceHistory=$this->getBalanceSumm($id)-$v_ostatok;
+            $balanceHistory = $this->getBalanceSumm($id) - $v_ostatok;
+            $summa=0;
+            foreach ($balanceList as $bal){
+                $bl[]=[
+                    'date'=>$bal->date,
+                    'money'=>$bal->money,
+                    'rashod'=>'',
+                    'ostatok'=>$summa=$summa+$bal->money];
+            }
 
-
-            if(!is_null($end_date)) {
-                $database = FoodSelect::where(['user_id' => $id])->whereBetween('date', [$start_date, $end_date])->orderBy('date', 'ASC')->get();
+            if (!is_null($end_date)){
+                $database = FoodSelect::where(['user_id' => $id])->whereBetween('date', [$start_date, $end_date])->orderBy('date', 'DESC')->get();
                 $summaAll = 0;
                 $summa_z = 0;
                 $summa_o = 0;
                 $summa_u = 0;
-                if(!empty($database)){
-                foreach ($database as $date) {
-                    $sena = $this->getDayPrice($date->date);
-                    if(!empty($sena)){
-                    if ($date->zavtrak == 1) {
-                        $summa_z += !empty($sena->zavtrak) ? $sena->zavtrak : 0;
-                    }
+                if (!empty($database)) {
+                    foreach ($database as $date) {
+                        $sena = $this->getDayPrice($date->date);
+                        if (!empty($sena)) {
+                            if ($date->zavtrak == 1) {
+                                $summa_z += !empty($sena->zavtrak) ? $sena->zavtrak : 0;
+                            }
 
-                    if ($date->obed == 1) {
-                        $summa_o += !empty($sena->obed) ? $sena->obed : 0;
-                    }
+                            if ($date->obed == 1) {
+                                $summa_o += !empty($sena->obed) ? $sena->obed : 0;
+                            }
 
-                    if ($date->ujin == 1) {
-                        $summa_u += !empty($sena->ujin) ? $sena->ujin : 0;
+                            if ($date->ujin == 1) {
+                                $summa_u += !empty($sena->ujin) ? $sena->ujin : 0;
+                            }
+                            $sena = ($date->zavtrak == 1 ? $sena->zavtrak : 0) + ($date->obed == 1 ? $sena->obed : 0) + ($date->ujin == 1 ? $sena->ujin : 0);
+                            $summaAll = $summa_z + $summa_o + $summa_u;
+
+
+                                $array[] = [
+                                    'date' => $date->date,
+                                    //'balanceHistory' => $balanceCurrent - $summaAll + $sena,
+                                    'balanceHistory' => '',
+                                    //'currentBalance'=>$balanceCurrent-$summaAll,
+                                    //'summaBetween'=>$v_ostatok,
+
+                                    'summa_rashod' => round($sena, 2),
+                                    //x'balanceHistory'=>round($balanceHistory,2),
+                                    'v_ostatok' => round($balanceHistory+$summaAll-$sena, 2),
+                                ];
+
+                        }
                     }
-                    $sena = ($date->zavtrak == 1 ? $sena->zavtrak : 0) + ($date->obed == 1 ? $sena->obed : 0) + ($date->ujin == 1 ? $sena->ujin : 0);
-                    $summaAll = $summa_z + $summa_o + $summa_u;
-                    //$v_ostatok=$v_ostatok-$summaAll;
-                    $array[] = [
-                        'date' => $date->date,
-                        'balanceHistory' => $balanceCurrent - $summaAll + $sena,
-                        //'currentBalance'=>$balanceCurrent-$summaAll,
-                        //'summaBetween'=>$v_ostatok,
-                        'summa' => round($sena, 2),
-                        //x'balanceHistory'=>round($balanceHistory,2),
-                        'ostatok' => round($balanceCurrent - $summaAll, 2),
-                    ];
+                    $array = array_merge($array, $bl);
+                    //asort($array);
                 }
-                }
+                $response = ['reports' => !empty($array) ? $array : null,'balanceList'=>$balanceList,'date_start' => $start_date, 'ishodyawiy_ostatok' => $summaAll, 'end_date' => $end_date, 'v_ostatok' => $balanceCurrent - $eated_money,];
             }
-                $response=['reports'=>!empty($array) ? $array : null,'date_start'=>$start_date,'end_date'=>$end_date,'v_ostatok'=>$balanceCurrent-$eated_money,];
-            }
-            return response($response,202);
-        }else
-            return response(['error'=>true],202);
+            return response($response, 200);
+        } else
+            return response(['error' => true], 200);
+
+
     }
 
     private function getSummaWithDate($id,$start_date,$end_date){
@@ -195,6 +226,14 @@ class UsersController extends Controller
     //Общий баланс
     private function getBalanceSumm($id){
       return  BalanceHistory::where(['user_id'=>$id])->sum('money');
+    }
+
+    //Общий баланс
+    private function getBalanceList($id,$date_s,$date_e){
+      $check=BalanceHistory::select(['date','money'])->where(['user_id'=>$id])->whereBetween('date',[$date_s,$date_e])->orderBy('date','ASC')->get();
+      if(!empty($check))
+          return $check;
+      return 0;
     }
 
     // Цена общий еды
