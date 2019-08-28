@@ -97,6 +97,7 @@ class CreateController extends BaseController
     {
 
         if ($request->validate([
+            'id_balance'=>'required|integer',
             'money' => 'required|string',
             'date' => 'required|date',
             'user_id' => 'required|integer',
