@@ -120,6 +120,8 @@ class UsersController extends Controller
                     'ostatok'=>$summa=$summa+$bal->money];
             }
 
+            rsort($bl);
+
             if (!is_null($end_date)){
                 $database = FoodSelect::where(['user_id' => $id])->whereBetween('date', [$start_date, $end_date])->orderBy('date', 'DESC')->get();
                 $summaAll = 0;

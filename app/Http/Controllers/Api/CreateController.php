@@ -93,6 +93,37 @@ class CreateController extends BaseController
             return response($response, 200);
     }
 
+    public function update_balance(Request $request)
+    {
+
+        if ($request->validate([
+            'money' => 'required|string',
+            'date' => 'required|date',
+            'user_id' => 'required|integer',
+        ]))
+            $result = $this->updateBalance($request);
+
+        if($result)
+        $response = ['error' => false, 'message' => 'Money has been updated!'];
+        else
+            $response=['error'=>true,'message'=>'Money does not updated!'];
+
+        return response($response, 200);
+    }
+    public function delete_balance(Request $request)
+    {
+
+        if ($request->validate([
+            'id_balance' => 'required|integer',
+        ]))
+            $result = $this->deleteBalance($request);
+        if($result)
+        $response = ['error' => false, 'message' => 'Money has been deleted!'];
+        else
+            $response=['error'=>true,'message'=>'Money does not exists'];
+            return response($response, 200);
+    }
+
     // Update Password user
     public function update_pass(Request $request)
     {
@@ -270,6 +301,38 @@ class CreateController extends BaseController
             }
         }
 
+        return false;
+    }
+
+    private function updateBalance($request)
+    {
+        $id_balance = $request->get('id_balance');
+        $date = $request->get('date');
+        $money = $request->get('money');
+        $user_id = $request->get('user_id');
+        $balance = BalanceHistory::find($id_balance);
+        if (!empty($money) && !empty($date) && !empty($user_id)) {
+            $balance->money = $money;
+            $balance->date = $date;
+            $balance->user_id = $user_id;
+            $balance->updated_at = date("Y-m-d H:i:s");
+
+            if (!empty($balance)) {
+                if ($balance->save()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private function deleteBalance($request)
+    {
+        $id_balance = $request->get('id_balance');
+        $do=BalanceHistory::find($id_balance)->delete();
+
+        if($do)
+            return true;
         return false;
     }
 
