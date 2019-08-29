@@ -76,7 +76,7 @@ class UsersController extends Controller
 
     public function food_select_user($user_id,$date)
     {
-        $foodselect = FoodSelect::select(['user_id','date','zavtrak','obed','ujin'])->where(['user_id' => $user_id,'date'=>$date])->first();
+        $foodselect = FoodSelect::select(['id','user_id','date','zavtrak','obed','ujin'])->where(['user_id' => $user_id,'date'=>$date])->first();
 
         if(!empty($foodselect)){
 
