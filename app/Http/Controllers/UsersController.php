@@ -103,13 +103,13 @@ class UsersController extends Controller
     }
 
 
-    public function getBalance($id, $start_date, $end_dat)
+    public function getBalance($id, $start_date, $end_datee)
     {
         $date = date('Y-m-d');
-        if ($date >= $end_dat) {
+        if ($end_datee >= $date) {
             $end_date = $date;
         } else
-            $end_date = $end_dat;
+            $end_date = $end_datee;
         if (isset($id) && isset($start_date)) {
 
             $v_ostatok = $this->getSummaWithDate($id, $start_date, $end_date);
@@ -130,34 +130,44 @@ class UsersController extends Controller
             $summa_o = 0;
             $summa_u = 0;
             $i=0;
-            if (!empty($balanceList)) {
-                foreach ($balanceList as $bal) {
+
+            if ($balanceList['count']>0) {
+                foreach ($balanceList['check'] as $bal) {
                     $i++;
 
-                    if($i==1){
-                        $en_date=$bal->date;
-                    }elseif($i>1){
-                        $start_date=$balanceList[$i-1]->date;
-                        if(count($balanceList)==$i){
-                            $en_date=$end_date;
-                        }else
-                        $en_date=$balanceList[$i]->date;
-                    }elseif($i==3){
-                        $start_date=$balanceList[2]->date;
-                        if(count($balanceList)==$i){
-                            $en_date=$end_date;
-                        }else
-                            $en_date=$balanceList[2]->date;
+                    if ($balanceList['count']>1) {
+
+                        if ($balanceList['count'] == $i) {
+                            $start_dat = $this->addPlusDay($balanceList['check'][$balanceList['count'] - 1]->date);
+                            //$start_dat = $balanceList['check'][count($balanceList)-1]->date;
+                            $en_date = $end_date;
+                        } else {
+                            if($i==1)
+                                $start_dat=$start_date;
+                            else
+                            $start_dat = $this->addPlusDay($balanceList['check'][$i - 1]->date);
+                            //$start_dat = $balanceList['check'][$i-1]->date;
+                            $en_date = $balanceList['check'][$i]->date;
+                        }
+
+                    }else{
+                        $start_dat=$start_date;
+                        $en_date=$end_date;
                     }
 
-                    $database = FoodSelect::where(['user_id' => $id])->whereBetween('date', [$start_date, $en_date])->orderBy('date', 'DESC')->get();
+                    $oplata=$this->getBalanceSummForDay($id,$start_dat,$en_date);
+
+                    $database = FoodSelect::where(['user_id' => $id])->whereBetween('date', [$start_dat, $en_date])->orderBy('date', 'DESC')->get();
                     $bl[] = [
-                        's-date'=>$start_date,
-                        'e-date'=>$en_date,
                         'date' => $bal->date,
-                        'money' => $bal->money,
-                        'rashod' => '',
-                        'ostatok' => $balanceCurrent - $v_ostatok];
+                        'money'=>$bal->money,
+                        'summa_rashod'=>'',
+                        //'money' => $bal->money,
+                        //'i' => $i,
+                        //'s_date_en_date' => $start_dat.'=>'.$en_date,
+                        //'e_date' => ,
+                        'ostatok' => $oplata
+                    ];
 
 
                     foreach ($database as $date) {
@@ -178,24 +188,24 @@ class UsersController extends Controller
                             $summaAll = $summa_z + $summa_o + $summa_u;
 
 
-                            $bl[1][] = [
+                            $bl[] = [
                                 'date' => $date->date,
                                 //'balanceHistory' => $balanceCurrent - $summaAll + $sena,
-                                'balanceHistory' => count($balanceList),
-                                'rashet' => '',
+                                'money' => '',
                                 //'currentBalance'=>$balanceCurrent-$summaAll,
                                 //'summaBetween'=>$v_ostatok,
 
                                 'summa_rashod' => round($sena, 2),
                                 //x'balanceHistory'=>round($balanceHistory,2),
-                                'v_ostatok' => $bal->date >= $date->date ? round($balanceHistory + $summaAll - $sena - $bal->money, 2) : round($balanceHistory + $summaAll - $sena, 2),
+                                'v_ostatok' => $bal->date >= $date->date ? round($balanceHistory + $summaAll - $sena - $bal->money, 2) : round($balanceHistory + $summaAll - $sena - $bal->money, 2),
                             ];
 
                         }
                     }
                 }
+                //$bl=array_merge($blb,$bld);
                 if (!empty($bl))
-                    rsort($bl);
+                   rsort($bl);
 
             }else{
                // if (!is_null($end_date)) {
@@ -223,10 +233,10 @@ class UsersController extends Controller
                                 $summaAll = $summa_z + $summa_o + $summa_u;
 
 
-                                $bl[1][] = [
+                                $bl[] = [
                                     'date' => $date->date,
                                     //'balanceHistory' => $balanceCurrent - $summaAll + $sena,
-                                    'balanceHistory' => '',
+                                    'money' => '',
                                     //'currentBalance'=>$balanceCurrent-$summaAll,
                                     //'summaBetween'=>$v_ostatok,
 
@@ -250,6 +260,14 @@ class UsersController extends Controller
         } else
             return response(['error' => true], 200);
 
+
+    }
+
+    private function addPlusDay($date){
+        $d=explode('-',$date);
+        $y=$d[0];$m=$d[1];$day=$d[2];
+        $day=$day+1;
+        return $y.'-'.$m.'-'.$day;
 
     }
 
@@ -308,12 +326,16 @@ class UsersController extends Controller
       return  BalanceHistory::where(['user_id'=>$id])->sum('money');
     }
 
+    private function getBalanceSummForDay($id,$s_day,$e_day){
+      return  BalanceHistory::where(['user_id'=>$id])->whereBetween('date',[$s_day,$e_day])->sum('money');
+    }
+
     //Общий баланс
     private function getBalanceList($id,$date_s,$date_e){
       $check=BalanceHistory::select(['date','money'])->where(['user_id'=>$id])->whereBetween('date',[$date_s,$date_e])->orderBy('date','ASC')->get();
-      if(!empty($check))
-          return $check;
-      return 0;
+      if($check)
+          return $array=['check'=>$check,'count'=>count($check)];
+      return false;
     }
 
     // Цена общий еды
