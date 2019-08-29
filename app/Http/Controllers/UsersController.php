@@ -13,7 +13,7 @@ class UsersController extends Controller
 {
 
     public function users(){
-        return Users::where(['isAdmin'=>0,'isActive'=>1])->get();
+        return Users::select(['id','name','fname','lname','fio_parents','phone_parents'])->where(['isAdmin'=>0,'isActive'=>1])->get();
     }
     //Список пополнения
     public function balance_list(){
@@ -74,6 +74,19 @@ class UsersController extends Controller
         return response($response, 202);
     }
 
+    public function food_select_user($user_id,$date)
+    {
+        $foodselect = FoodSelect::select(['user_id','date','zavtrak','obed','ujin'])->where(['user_id' => $user_id,'date'=>$date])->first();
+
+        if(!empty($foodselect)){
+
+            $response=['error'=>false,'data'=>$foodselect];
+        }else
+            $response = ['error' => true, 'message' => 'Date is empty in database'];
+
+        return response($response, 202);
+    }
+
     public function getText(){
         $text=Help::select(['text'])->first();
         $response=['error'=>false,'text'=>$text->text];
@@ -111,24 +124,42 @@ class UsersController extends Controller
             $balanceCurrent = $this->getBalanceSumm($id);
 
             $balanceHistory = $this->getBalanceSumm($id) - $v_ostatok;
-            $summa=0;
-            foreach ($balanceList as $bal){
-                $bl[]=[
-                    'date'=>$bal->date,
-                    'money'=>$bal->money,
-                    'rashod'=>'',
-                    'ostatok'=>$summa=$summa+$bal->money];
-            }
+            $summa = 0;
+            $summaAll = 0;
+            $summa_z = 0;
+            $summa_o = 0;
+            $summa_u = 0;
+            $i=0;
+            if (!empty($balanceList)) {
+                foreach ($balanceList as $bal) {
+                    $i++;
 
-            rsort($bl);
+                    if($i==1){
+                        $en_date=$bal->date;
+                    }elseif($i>1){
+                        $start_date=$balanceList[$i-1]->date;
+                        if(count($balanceList)==$i){
+                            $en_date=$end_date;
+                        }else
+                        $en_date=$balanceList[$i]->date;
+                    }elseif($i==3){
+                        $start_date=$balanceList[2]->date;
+                        if(count($balanceList)==$i){
+                            $en_date=$end_date;
+                        }else
+                            $en_date=$balanceList[2]->date;
+                    }
 
-            if (!is_null($end_date)){
-                $database = FoodSelect::where(['user_id' => $id])->whereBetween('date', [$start_date, $end_date])->orderBy('date', 'DESC')->get();
-                $summaAll = 0;
-                $summa_z = 0;
-                $summa_o = 0;
-                $summa_u = 0;
-                if (!empty($database)) {
+                    $database = FoodSelect::where(['user_id' => $id])->whereBetween('date', [$start_date, $en_date])->orderBy('date', 'DESC')->get();
+                    $bl[] = [
+                        's-date'=>$start_date,
+                        'e-date'=>$en_date,
+                        'date' => $bal->date,
+                        'money' => $bal->money,
+                        'rashod' => '',
+                        'ostatok' => $balanceCurrent - $v_ostatok];
+
+
                     foreach ($database as $date) {
                         $sena = $this->getDayPrice($date->date);
                         if (!empty($sena)) {
@@ -147,7 +178,52 @@ class UsersController extends Controller
                             $summaAll = $summa_z + $summa_o + $summa_u;
 
 
-                                $array[] = [
+                            $bl[1][] = [
+                                'date' => $date->date,
+                                //'balanceHistory' => $balanceCurrent - $summaAll + $sena,
+                                'balanceHistory' => count($balanceList),
+                                'rashet' => '',
+                                //'currentBalance'=>$balanceCurrent-$summaAll,
+                                //'summaBetween'=>$v_ostatok,
+
+                                'summa_rashod' => round($sena, 2),
+                                //x'balanceHistory'=>round($balanceHistory,2),
+                                'v_ostatok' => $bal->date >= $date->date ? round($balanceHistory + $summaAll - $sena - $bal->money, 2) : round($balanceHistory + $summaAll - $sena, 2),
+                            ];
+
+                        }
+                    }
+                }
+                if (!empty($bl))
+                    rsort($bl);
+
+            }else{
+               // if (!is_null($end_date)) {
+                    $database = FoodSelect::where(['user_id' => $id])->whereBetween('date', [$start_date, $end_date])->orderBy('date', 'DESC')->get();
+                    $summaAll = 0;
+                    $summa_z = 0;
+                    $summa_o = 0;
+                    $summa_u = 0;
+                    if (!empty($database)) {
+                        foreach ($database as $date) {
+                            $sena = $this->getDayPrice($date->date);
+                            if (!empty($sena)) {
+                                if ($date->zavtrak == 1) {
+                                    $summa_z += !empty($sena->zavtrak) ? $sena->zavtrak : 0;
+                                }
+
+                                if ($date->obed == 1) {
+                                    $summa_o += !empty($sena->obed) ? $sena->obed : 0;
+                                }
+
+                                if ($date->ujin == 1) {
+                                    $summa_u += !empty($sena->ujin) ? $sena->ujin : 0;
+                                }
+                                $sena = ($date->zavtrak == 1 ? $sena->zavtrak : 0) + ($date->obed == 1 ? $sena->obed : 0) + ($date->ujin == 1 ? $sena->ujin : 0);
+                                $summaAll = $summa_z + $summa_o + $summa_u;
+
+
+                                $bl[1][] = [
                                     'date' => $date->date,
                                     //'balanceHistory' => $balanceCurrent - $summaAll + $sena,
                                     'balanceHistory' => '',
@@ -156,16 +232,20 @@ class UsersController extends Controller
 
                                     'summa_rashod' => round($sena, 2),
                                     //x'balanceHistory'=>round($balanceHistory,2),
-                                    'v_ostatok' => round($balanceHistory+$summaAll-$sena, 2),
+                                    'v_ostatok' => round($balanceHistory + $summaAll - $sena, 2),
                                 ];
 
+                            }
                         }
+                        //$array = array_merge($array, $bl);
+                        //asort($array);
                     }
-                    $array = array_merge($array, $bl);
-                    //asort($array);
-                }
-                $response = ['reports' => !empty($array) ? $array : null,'balanceList'=>$balanceList,'date_start' => $start_date, 'ishodyawiy_ostatok' => $summaAll, 'end_date' => $end_date, 'v_ostatok' => $balanceCurrent - $eated_money,];
             }
+                $response = ['reports' => !empty($bl) ? $bl : null,/*'balanceList'=>$balanceList,*/
+                    'date_start' => $start_date, 'ishodyawiy_ostatok' => $summaAll, 'end_date' => $end_date, 'v_ostatok' => $balanceCurrent - $eated_money,];
+
+
+
             return response($response, 200);
         } else
             return response(['error' => true], 200);
