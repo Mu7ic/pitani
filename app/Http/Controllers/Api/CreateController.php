@@ -398,15 +398,14 @@ class CreateController extends BaseController
         $ujin = $request->get('ujin');
         if ($date>=$date_now) {
             if ($this->dateExists($date, $user_id)==false) {
-                $food = new FoodSelect([
-                    'date' => $date,
-                    'user_id' => $user_id,
-                    'zavtrak' => $zavtrak,
-                    'obed' => $obed,
-                    'ujin' => $ujin,
-                    'created_at' => date("Y-m-d H:i:s"),
-                    'update_at' => date("Y-m-d H:i:s"),
-                ]);
+                $food = FoodSelect::where(['user_id'=>$user_id,'date'=>$date])->first();
+                    $food->date = $date;
+                $food->user_id = $user_id;
+                $food->zavtrak = $zavtrak;
+                $food->obed = $obed;
+                $food->ujin = $ujin;
+                $food->updated_at=date("Y-m-d H:i:s");
+
 
                 // Обновляем баланс
                 if ($food->save())
