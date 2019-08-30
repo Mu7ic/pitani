@@ -169,7 +169,7 @@ class UsersController extends Controller
                         //'i' => $i,
                         //'s_date_en_date' => $start_dat.'=>'.$en_date,
                         //'e_date' => ,
-                        'ostatok' => round($oplata-$eted_money_for_the_date,2)
+                        'v_ostatok' => round($oplata-$eted_money_for_the_date,2)
                     ];
 
 
