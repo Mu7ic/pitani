@@ -217,6 +217,17 @@ class CreateController extends BaseController
 
     }
 
+    public function get_balance($id)
+    {
+        $balance=BalanceHistory::find($id);
+        if(!empty($balance)){
+            $response=['id'=>$balance->id,'money'=>$balance->money,'date'=>$balance->date,'user_id'=>$balance->user_id];
+        }else{
+            $response=['error'=>true,'message'=>'Balance does not exists'];
+        }
+        return response($response,200);
+    }
+
     //Создаем пользователя
     private function setUsers($request)
     {
@@ -325,6 +336,7 @@ class CreateController extends BaseController
 
         return false;
     }
+
 
     private function updateBalance($request)
     {

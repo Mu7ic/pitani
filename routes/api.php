@@ -40,6 +40,7 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/users/delete', 'Api\CreateController@user_delete')->name('delete_user');
 
     Route::post('/users/add/balance', 'Api\CreateController@add_balance')->name('add_balance');
+    Route::get('/users/get/balance/{id}', 'Api\CreateController@get_balance')->name('get_balance');
     Route::post('/users/update/balance', 'Api\CreateController@update_balance')->name('add_balance');
     Route::post('/users/delete/balance', 'Api\CreateController@delete_balance')->name('add_balance');
 
