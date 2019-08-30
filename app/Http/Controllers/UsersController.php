@@ -155,7 +155,10 @@ class UsersController extends Controller
                         $en_date=$end_date;
                     }
 
-                    $oplata=$this->getBalanceSummForDay($id,$start_dat,$en_date);
+                    $oplata=$this->getBalanceSummForDay($id,$bal->date);
+
+                    $eted_money_for_the_date=$this->checkEatedMoneyWithDate($id,$bal->date);
+                    //$summEated=$oplata-$eted_money_for_the_date;
 
                     $database = FoodSelect::where(['user_id' => $id])->whereBetween('date', [$start_dat, $en_date])->orderBy('date', 'DESC')->get();
                     $bl[] = [
@@ -166,11 +169,12 @@ class UsersController extends Controller
                         //'i' => $i,
                         //'s_date_en_date' => $start_dat.'=>'.$en_date,
                         //'e_date' => ,
-                        'ostatok' => $oplata
+                        'ostatok' => round($oplata-$eted_money_for_the_date,2)
                     ];
 
 
                     foreach ($database as $date) {
+                        $eted_money_for_the_date=$this->checkEatedMoneyWithDate($id,$date->date);
                         $sena = $this->getDayPrice($date->date);
                         if (!empty($sena)) {
                             if ($date->zavtrak == 1) {
@@ -194,10 +198,13 @@ class UsersController extends Controller
                                 'money' => '',
                                 //'currentBalance'=>$balanceCurrent-$summaAll,
                                 //'summaBetween'=>$v_ostatok,
+                                //'ostatok'=>$oplata,
+                                //'sel'=>$eted_money_for_the_date,
 
                                 'summa_rashod' => round($sena, 2),
                                 //x'balanceHistory'=>round($balanceHistory,2),
-                                'v_ostatok' => $bal->date >= $date->date ? round($balanceHistory + $summaAll - $sena - $bal->money, 2) : round($balanceHistory + $summaAll - $sena - $bal->money, 2),
+                                //'v_ostatok' => $bal->date >= $date->date ? round($balanceHistory + $summaAll - $sena - $bal->money, 2) : round($balanceHistory + $summaAll - $sena - $bal->money, 2),
+                                'v_ostatok' => round($oplata-$eted_money_for_the_date, 2),
                             ];
 
                         }
@@ -252,7 +259,7 @@ class UsersController extends Controller
                     }
             }
                 $response = ['reports' => !empty($bl) ? $bl : null,/*'balanceList'=>$balanceList,*/
-                    'date_start' => $start_date, 'ishodyawiy_ostatok' => $summaAll, 'end_date' => $end_date, 'v_ostatok' => $balanceCurrent - $eated_money,];
+                    'date_start' => $start_date, 'ishodyawiy_ostatok' => $eated_money, 'end_date' => $end_date, 'v_ostatok' => $balanceCurrent - $eated_money,];
 
 
 
@@ -321,13 +328,40 @@ class UsersController extends Controller
         return $summa;
     }
 
+    public function checkEatedMoneyWithDate($id,$date_select){
+        $database = FoodSelect::where(['user_id' => $id])->where('date','<=',$date_select)->get();
+        $summa=0;
+        foreach ($database as $date){
+            $sena=$this->getDayPrice($date->date);
+            if(!empty($sena)){
+            if($date->zavtrak==1)
+                $summa+=!empty($sena->zavtrak) ? $sena->zavtrak : 0;
+
+
+            if($date->obed==1)
+                $summa+=!empty($sena->obed) ? $sena->obed : 0;
+
+
+            if($date->ujin==1)
+                $summa+=!empty($sena->ujin) ? $sena->ujin : 0;
+
+            }
+        }
+        return $summa;
+    }
+
     //Общий баланс
     private function getBalanceSumm($id){
       return  BalanceHistory::where(['user_id'=>$id])->sum('money');
     }
+    //Общий баланс
+    private function getBalanceSummWithDate($id,$s_date){
+        //$s_date='2019-09-02';
+      return  BalanceHistory::where(['user_id'=>$id])->where('date','<=',$s_date)->sum('money');
+    }
 
-    private function getBalanceSummForDay($id,$s_day,$e_day){
-      return  BalanceHistory::where(['user_id'=>$id])->whereBetween('date',[$s_day,$e_day])->sum('money');
+    private function getBalanceSummForDay($id,$s_day){
+      return  $this->getBalanceSummWithDate($id,$s_day);
     }
 
     //Общий баланс
