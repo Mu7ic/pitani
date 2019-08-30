@@ -181,9 +181,9 @@ class CreateController extends BaseController
         if ($request->validate([
             'date' => 'required|date',
             'user_id'=>'required|integer',
-            'zavtrak' => 'integer',
-            'obed' => 'integer',
-            'ujin' => 'integer',
+            'zavtrak' => 'required|integer',
+            'obed' => 'required|integer',
+            'ujin' => 'required|integer',
         ]))
             $result = $this->setFoodDay($request);
         $date=$request->get('date');
