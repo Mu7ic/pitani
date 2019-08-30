@@ -51,7 +51,7 @@ class CreateController extends BaseController
             'lname' => '',
             'fio_parents' => 'required|string',
             'phone_parents' => 'required|integer',
-            'password' => 'required|string',
+            //'password' => 'required|string',
 
         ]))
 
@@ -248,7 +248,7 @@ class CreateController extends BaseController
             $sub->lname=$request->get('lname');
             $sub->fio_parents=$request->get('fio_parents');
             $sub->phone_parents=$request->get('phone_parents');
-            $sub->password=md5($request->get('password'));
+            //$sub->password=md5($request->get('password'));
 
         }else
             return false;
