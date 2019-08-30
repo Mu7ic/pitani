@@ -181,14 +181,35 @@ class CreateController extends BaseController
         if ($request->validate([
             'date' => 'required|date',
             'user_id'=>'required|integer',
-            'zavtrak' => 'required|integer',
-            'obed' => 'required|integer',
-            'ujin' => 'required|integer',
+            'zavtrak' => 'integer',
+            'obed' => 'integer',
+            'ujin' => 'integer',
         ]))
             $result = $this->setFoodDay($request);
         $date=$request->get('date');
         if($result){
         $response = ['message' => 'Food with date has been created!'];
+        }else{
+            $response=['error'=>true,'message'=>'Date is exist in base or you send past days'];
+        }
+        return response($response, 200);
+
+    }
+
+    public function food_day_update_user(Request $request)
+    {
+        $today=date('Y-m-d');
+        if ($request->validate([
+            'date' => 'required|date',
+            'user_id'=>'required|integer',
+            'zavtrak' => 'required|integer',
+            'obed' => 'required|integer',
+            'ujin' => 'required|integer',
+        ]))
+            $result = $this->setFoodDayUpdate($request);
+        $date=$request->get('date');
+        if($result){
+        $response = ['message' => 'Food with date has been updated!'];
         }else{
             $response=['error'=>true,'message'=>'Date is exist in base or you send past days'];
         }
@@ -264,9 +285,9 @@ class CreateController extends BaseController
     {
 
         if ($request->validate([
-            'zavtrak' => 'integer',
-            'obed' => 'integer',
-            'ujin' => 'integer',
+            'zavtrak' => 'reqired|integer',
+            'obed' => 'reqired|integer',
+            'ujin' => 'reqired|integer',
         ])) {
             $zavtrak = $request->get('zavtrak');
             $obed = $request->get('obed');
@@ -348,6 +369,35 @@ class CreateController extends BaseController
         $ujin = $request->get('ujin');
         if ($date>=$date_now) {
             if ($this->dateExists($date, $user_id)) {
+                $food = new FoodSelect([
+                    'date' => $date,
+                    'user_id' => $user_id,
+                    'zavtrak' => $zavtrak,
+                    'obed' => $obed,
+                    'ujin' => $ujin,
+                    'created_at' => date("Y-m-d H:i:s"),
+                    'update_at' => date("Y-m-d H:i:s"),
+                ]);
+
+                // Обновляем баланс
+                if ($food->save())
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    private function setFoodDayUpdate($request)
+    {
+        $date_now = date('Y-m-d');
+
+        $date = $request->get('date');
+        $user_id = $request->get('user_id');
+        $zavtrak = $request->get('zavtrak');
+        $obed = $request->get('obed');
+        $ujin = $request->get('ujin');
+        if ($date>=$date_now) {
+            if ($this->dateExists($date, $user_id)==false) {
                 $food = new FoodSelect([
                     'date' => $date,
                     'user_id' => $user_id,

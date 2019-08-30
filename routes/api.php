@@ -45,10 +45,14 @@ Route::middleware('auth:api')->group(function () {
 
     Route::get('/users/report/{id}/{start_date}/{end_date}', 'UsersController@getBalance')->name('getReports');
 
-    Route::post('/users/food/update/day', 'Api\CreateController@food_day');
+    Route::post('/users/select/food/day', 'Api\CreateController@food_day');
+
+    Route::post('/users/food/update/day', 'Api\CreateController@food_day_update_user');
 
     Route::get('/select/food/day/{date}', 'UsersController@food_select');
+
     Route::get('/select/food/day/{user_id}/{date}', 'UsersController@food_select_user');
+
     Route::post('/select/food/day/{date}', 'Api\CreateController@food_day_update');
 
     Route::post('/food/create', 'Api\CreateController@food_create')->name('food_create');
