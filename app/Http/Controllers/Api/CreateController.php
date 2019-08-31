@@ -98,11 +98,13 @@ class CreateController extends BaseController
 
         if ($request->validate([
             'id_balance'=>'required|integer',
-            'money' => 'required|string',
+            'money' => 'required|integer',
             'date' => 'required|date',
             'user_id' => 'required|integer',
         ]))
             $result = $this->updateBalance($request);
+
+
 
         if($result)
         $response = ['error' => false, 'message' => 'Money has been updated!'];
