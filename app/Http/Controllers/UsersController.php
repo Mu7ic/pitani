@@ -162,7 +162,7 @@ class UsersController extends Controller
 
                     $database = FoodSelect::where(['user_id' => $id])->whereBetween('date', [$start_dat, $en_date])->orderBy('date', 'DESC')->get();
                     $bl[] = [
-                        'date' => $bal->date,
+                        'date' => $this->formatDay($bal->date),
                         'money'=>$bal->money,
                         'summa_rashod'=>'',
                         //'money' => $bal->money,
@@ -174,6 +174,7 @@ class UsersController extends Controller
 
 
                     foreach ($database as $date) {
+                        $oplata=$this->getBalanceSummForDay($id,$date->date);
                         $eted_money_for_the_date=$this->checkEatedMoneyWithDate($id,$date->date);
                         $sena = $this->getDayPrice($date->date);
                         if (!empty($sena)) {
@@ -193,7 +194,7 @@ class UsersController extends Controller
 
 
                             $bl[] = [
-                                'date' => $date->date,
+                                'date' => $this->formatDay($date->date),
                                 //'balanceHistory' => $balanceCurrent - $summaAll + $sena,
                                 'money' => '',
                                 //'currentBalance'=>$balanceCurrent-$summaAll,
@@ -212,11 +213,11 @@ class UsersController extends Controller
                 }
                 //$bl=array_merge($blb,$bld);
                 if (!empty($bl))
-                   rsort($bl);
+                   sort($bl);
 
             }else{
                // if (!is_null($end_date)) {
-                    $database = FoodSelect::where(['user_id' => $id])->whereBetween('date', [$start_date, $end_date])->orderBy('date', 'DESC')->get();
+                    $database = FoodSelect::where(['user_id' => $id])->whereBetween('date', [$start_date, $end_date])->orderBy('date', 'ASC')->get();
                     $summaAll = 0;
                     $summa_z = 0;
                     $summa_o = 0;
@@ -241,7 +242,7 @@ class UsersController extends Controller
 
 
                                 $bl[] = [
-                                    'date' => $date->date,
+                                    'date' => $this->formatDay($date->date),
                                     //'balanceHistory' => $balanceCurrent - $summaAll + $sena,
                                     'money' => '',
                                     //'currentBalance'=>$balanceCurrent-$summaAll,
@@ -249,7 +250,7 @@ class UsersController extends Controller
 
                                     'summa_rashod' => round($sena, 2),
                                     //x'balanceHistory'=>round($balanceHistory,2),
-                                    'v_ostatok' => round($balanceHistory + $summaAll - $sena, 2),
+                                    'v_ostatok' => round($balanceCurrent - $summaAll, 2),
                                 ];
 
                             }
@@ -259,7 +260,7 @@ class UsersController extends Controller
                     }
             }
                 $response = ['reports' => !empty($bl) ? $bl : null,/*'balanceList'=>$balanceList,*/
-                    'date_start' => $start_date, 'ishodyawiy_ostatok' => $eated_money, 'end_date' => $end_date, 'v_ostatok' => $balanceCurrent - $eated_money,];
+                    'date_start' => $this->formatDay($start_date), 'ishodyawiy_ostatok' => $eated_money, 'end_date' => $this->formatDay($end_date), 'v_ostatok' => $balanceCurrent - $eated_money,];
 
 
 
@@ -275,6 +276,13 @@ class UsersController extends Controller
         $y=$d[0];$m=$d[1];$day=$d[2];
         $day=$day+1;
         return $y.'-'.$m.'-'.$day;
+
+    }
+
+    private function formatDay($date){
+        $d=explode('-',$date);
+        $y=$d[0];$m=$d[1];$day=$d[2];
+        return $day.'/'.$m.'/'.$y;
 
     }
 
