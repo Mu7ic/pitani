@@ -298,11 +298,10 @@ class CreateController extends BaseController
     {
 
         if ($request->validate([
-            'zavtrak' => 'reqired|integer',
-            'obed' => 'reqired|integer',
-            'ujin' => 'reqired|integer',
+            'zavtrak' => 'required|integer',
+            'obed' => 'required|integer',
+            'ujin' => 'required|integer',
         ])) {
-
             $zavtrak = $request->get('zavtrak');
             $obed = $request->get('obed');
             $ujin = $request->get('ujin');
