@@ -302,6 +302,7 @@ class CreateController extends BaseController
             'obed' => 'reqired|integer',
             'ujin' => 'reqired|integer',
         ])) {
+
             $zavtrak = $request->get('zavtrak');
             $obed = $request->get('obed');
             $ujin = $request->get('ujin');
