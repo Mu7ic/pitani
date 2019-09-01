@@ -110,6 +110,12 @@ class UsersController extends Controller
             $end_date = $date;
         } else
             $end_date = $end_datee;
+
+        $s_date='2019-08-01';
+
+        if($start_date<=$s_date)
+            $start_date=$s_date;
+
         if (isset($id) && isset($start_date)) {
 
             $v_ostatok = $this->getSummaWithDate($id, $start_date, $end_date);
