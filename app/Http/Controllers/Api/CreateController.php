@@ -487,6 +487,35 @@ class CreateController extends BaseController
         //var_dump($dating);
     }
 
+    public function food_select(Request $request)
+    {
+        $foodselect = FoodSelect::where(['date' => $request->date])->get();
+        if (!empty($foodselect)) {
+            $zavtrak = 0;
+            $obed = 0;
+            $ujin = 0;
+            foreach ($foodselect as $food) {
+                if(!empty($food)){
+                    if ($food->zavtrak == 1)
+                        $zavtrak++;
+                    if ($food->obed == 1)
+                        $obed++;
+                    if ($food->ujin == 1)
+                        $ujin++;
+                }
+            }
+            !empty($foodselect) ? $price = $this->getDayPrice($request->date) : $price=0;
+
+            //!empty($foodselect) ? $summa = (!is_null($zavtrak) ? $zavtrak : 0 * !is_null($price->zavtrak) ? $price->zavtrak : 0) + (!is_null($obed) ? $obed : 0 * !is_null($price->obed) ? $price->obed : 0 ) + (!is_null($ujin) ? $ujin : 0 * !is_null($price->ujin) ? $price->ujin : 0 ) : 0;
+            !empty($price) ? $summa = (!is_null($zavtrak) ? $zavtrak : 0 * !is_null($price->zavtrak) ? $price->zavtrak : 0) + (!is_null($obed) ? $obed : 0 * !is_null($price->obed) ? $price->obed : 0 ) + (!is_null($ujin) ?$ujin : 0 * !is_null($price->ujin) ? $price->ujin : 0 ) : $summa=0;
+
+            $response = ['count_zavtrak' => $zavtrak, 'count_obed' => $obed, 'count_ujin' => $ujin,'sena_zavtrak'=>!empty($price->zavtrak) ? $price->zavtrak : 0, 'sena_obed'=>!empty($price->obed) ? $price->obed : 0,'sena_ujin'=>!empty($price->ujin) ? $price->ujin : 0,
+                'summa' =>/*($zavtrak*$price->zavtrak)+($obed*$price->obed)+($ujin*$price->ujin)*/ $summa ];
+        } else $response = ['error' => true, 'message' => 'Date is empty in database'];
+
+        return response($response, 202);
+    }
+
     private function check_days($id_user,$date){
         $food_day=FoodSelect::where(['user_id'=>$id_user,'date'=>$date])->first();
         if(empty($food_day)){
@@ -499,6 +528,10 @@ class CreateController extends BaseController
             $food->created_at=date('Y-m-d H:i:s');
             $food->save();
         }
+    }
+
+    private function getDayPrice($date){
+        return  Datefood::select(['zavtrak','obed','ujin'])->where(['date'=>$date])->first();
     }
 
 }
