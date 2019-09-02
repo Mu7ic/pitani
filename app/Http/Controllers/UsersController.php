@@ -69,9 +69,9 @@ class UsersController extends Controller
             !empty($foodselect) ? $price = $this->getDayPrice($request->date) : $price=0;
 
             //!empty($foodselect) ? $summa = (!is_null($zavtrak) ? $zavtrak : 0 * !is_null($price->zavtrak) ? $price->zavtrak : 0) + (!is_null($obed) ? $obed : 0 * !is_null($price->obed) ? $price->obed : 0 ) + (!is_null($ujin) ? $ujin : 0 * !is_null($price->ujin) ? $price->ujin : 0 ) : 0;
-            !empty($foodselect) ? $summa = (!is_null($price->zavtrak) ? $zavtrak * $price->zavtrak : 0) + (!is_null($price->obed) ? $obed * $price->obed : 0 ) + (!is_null($price->ujin) ? $ujin * $price->ujin : 0 ) : 0;
+            !empty($foodselect) ? $summa = (!is_null($price->zavtrak) ? !is_null($zavtrak) ? $zavtrak : 0 * $price->zavtrak : 0) + (!is_null($price->obed) ? !is_null($obed) ? $obed : 0 * $price->obed : 0 ) + (!is_null($price->ujin) ? !is_null($ujin) ?$ujin : 0 * $price->ujin : 0 ) : 0;
 
-            $response = ['count_zavtrak' => $zavtrak, 'count_obed' => $obed, 'count_ujin' => $ujin,/* 'sena_zavtrak'=>!empty($price->zavtrak) ? $price->zavtrak : 0, 'sena_obed'=>!empty($price->obed) ? $price->obed : 0,'sena_ujin'=>!empty($price->ujin) ? $price->ujin : 0, */
+            $response = ['count_zavtrak' => $zavtrak, 'count_obed' => $obed, 'count_ujin' => $ujin,'sena_zavtrak'=>!empty($price->zavtrak) ? $price->zavtrak : 0, 'sena_obed'=>!empty($price->obed) ? $price->obed : 0,'sena_ujin'=>!empty($price->ujin) ? $price->ujin : 0,
                 'summa' =>/*($zavtrak*$price->zavtrak)+($obed*$price->obed)+($ujin*$price->ujin)*/ $summa ];
         } else $response = ['error' => true, 'message' => 'Date is empty in database'];
 
