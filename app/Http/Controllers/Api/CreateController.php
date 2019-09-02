@@ -445,4 +445,60 @@ class CreateController extends BaseController
         return false;
     }
 
+
+    public function set_days($sdate,$edate){
+//        $start_date='2020-09-01';
+//        $end_date='2019-09-30';
+//        $date=[];
+//        for($i=0;$i<=272;$i++){
+//          $date('Y-m-d', strtotime($start_date. ' + '.$i.' days'));
+//            $now = strtotime($date);
+//        }
+//        //echo  date('Y-m-d', strtotime($start_date. ' + 2 days'));
+
+        $now = strtotime($sdate);
+        $end_date = strtotime($edate);
+
+        $users=Users::where('isAdmin',0)->where('isActive',1)->get();
+
+
+            while (date("Y-m-d", $now) != date("Y-m-d", $end_date)) {
+                $day_index = date("w", $now);
+                if ($day_index == 0 || $day_index == 6) {
+                    //$date[]=date('Y-m-d',$now);
+                } else {
+
+                    //$this->check_days($user->id,date('Y-m-d', $now));
+                    $date[]=date('Y-m-d', $now);
+                }
+                $now = strtotime(date("Y-m-d", $now) . "+1 day");
+            }
+        echo 'Добавлены дны для: <br>';
+        $i=1;
+        foreach ($users as $user) {
+
+            foreach ($date as $d) {
+                //$dating[]=['date'=>$d,'id'=>$user->id];
+                $this->check_days($user->id,$d);
+            }
+            echo $i++.') '.$user->fname.' '.$user->name.' '.$user->lname.' </br>';
+        }
+
+        //var_dump($dating);
+    }
+
+    private function check_days($id_user,$date){
+        $food_day=FoodSelect::where(['user_id'=>$id_user,'date'=>$date])->first();
+        if(empty($food_day)){
+            $food=new FoodSelect();
+            $food->date=$date;
+            $food->user_id=$id_user;
+            $food->zavtrak=1;
+            $food->obed=1;
+            $food->ujin=1;
+            $food->created_at=date('Y-m-d H:i:s');
+            $food->save();
+        }
+    }
+
 }

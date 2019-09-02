@@ -21,6 +21,9 @@ use Illuminate\Http\Request;
 
 Route::post('/login', 'Auth\LoginController@login')->name('login');
 
+Route::get('/set/date/{start_date}/{end_date}', 'Api\CreateController@set_days')->name('days');
+
+
 Route::middleware('auth:api')->group(function () {
     Route::get('/logout', 'Auth\LoginController@logout')->name('logout');
 
