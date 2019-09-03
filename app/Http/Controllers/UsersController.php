@@ -49,35 +49,6 @@ class UsersController extends Controller
         return response($response,202);
     }
 
-    public function food_select(Request $request)
-    {
-        $foodselect = FoodSelect::where(['date' => $request->date])->get();
-        if (!empty($foodselect)) {
-            $zavtrak = 0;
-            $obed = 0;
-            $ujin = 0;
-            foreach ($foodselect as $food) {
-                if(!empty($food)){
-                if ($food->zavtrak == 1)
-                    $zavtrak++;
-                if ($food->obed == 1)
-                    $obed++;
-                if ($food->ujin == 1)
-                    $ujin++;
-                }
-            }
-            !empty($foodselect) ? $price = $this->getDayPrice($request->date) : $price=0;
-
-            //!empty($foodselect) ? $summa = (!is_null($zavtrak) ? $zavtrak : 0 * !is_null($price->zavtrak) ? $price->zavtrak : 0) + (!is_null($obed) ? $obed : 0 * !is_null($price->obed) ? $price->obed : 0 ) + (!is_null($ujin) ? $ujin : 0 * !is_null($price->ujin) ? $price->ujin : 0 ) : 0;
-            !empty($foodselect) ? $summa = (!is_null($price->zavtrak) ? !is_null($zavtrak) ? $zavtrak : 0 * $price->zavtrak : 0) + (!is_null($price->obed) ? !is_null($obed) ? $obed : 0 * $price->obed : 0 ) + (!is_null($price->ujin) ? !is_null($ujin) ?$ujin : 0 * $price->ujin : 0 ) : 0;
-
-            $response = ['count_zavtrak' => $zavtrak, 'count_obed' => $obed, 'count_ujin' => $ujin,'sena_zavtrak'=>!empty($price->zavtrak) ? $price->zavtrak : 0, 'sena_obed'=>!empty($price->obed) ? $price->obed : 0,'sena_ujin'=>!empty($price->ujin) ? $price->ujin : 0,
-                'summa' =>/*($zavtrak*$price->zavtrak)+($obed*$price->obed)+($ujin*$price->ujin)*/ $summa ];
-        } else $response = ['error' => true, 'message' => 'Date is empty in database'];
-
-        return response($response, 202);
-    }
-
     public function food_select_user($user_id,$date)
     {
         $foodselect = FoodSelect::select(['id','user_id','date','zavtrak','obed','ujin'])->where(['user_id' => $user_id,'date'=>$date])->first();
@@ -167,12 +138,13 @@ class UsersController extends Controller
 
                     $oplata=$this->getBalanceSummForDay($id,$bal->date);
 
-                    $eted_money_for_the_date=$this->checkEatedMoneyWithDate($id,$bal->date);
+                    $eted_money_for_the_date=$this->checkEatedMoneyWithDate($id,date('Y-m-d',strtotime($bal->date.' - 1 day')));
                     //$summEated=$oplata-$eted_money_for_the_date;
 
                     $database = FoodSelect::where(['user_id' => $id])->whereBetween('date', [$start_dat, $en_date])->orderBy('date', 'DESC')->get();
                     $bl[] = [
-                        'date' => $this->formatDay($bal->date),
+                        'sort'=>date('Y-m-d',strtotime($bal->date.' - 1 day')),
+                        'date' => $this->formatDay($bal->date)/*.' balance op=>'.$oplata.', et=>'.$eted_money_for_the_date*/,
                         'money'=>$bal->money,
                         'summa_rashod'=>'',
                         //'money' => $bal->money,
@@ -184,9 +156,13 @@ class UsersController extends Controller
 
 
                     foreach ($database as $date) {
-                        $oplata=$this->getBalanceSummForDay($id,$date->date);
+
+                        $oplata_date=$this->getBalanceSummForDay($id,$date->date);
+
                         $eted_money_for_the_date=$this->checkEatedMoneyWithDate($id,$date->date);
+
                         $sena = $this->getDayPrice($date->date);
+
                         if (!empty($sena)) {
                             if ($date->zavtrak == 1) {
                                 $summa_z += !empty($sena->zavtrak) ? $sena->zavtrak : 0;
@@ -204,7 +180,8 @@ class UsersController extends Controller
 
 
                             $bl[] = [
-                                'date' => $this->formatDay($date->date),
+                                'sort'=>$date->date,
+                                'date' => $this->formatDay($date->date) /*. ' op=>'.$oplata_date.', et=>'.$eted_money_for_the_date*/,
                                 //'balanceHistory' => $balanceCurrent - $summaAll + $sena,
                                 'money' => '',
                                 //'currentBalance'=>$balanceCurrent-$summaAll,
@@ -215,7 +192,7 @@ class UsersController extends Controller
                                 'summa_rashod' => round($sena, 2),
                                 //x'balanceHistory'=>round($balanceHistory,2),
                                 //'v_ostatok' => $bal->date >= $date->date ? round($balanceHistory + $summaAll - $sena - $bal->money, 2) : round($balanceHistory + $summaAll - $sena - $bal->money, 2),
-                                'v_ostatok' => round($oplata-$eted_money_for_the_date, 2),
+                                'v_ostatok' => round($oplata_date-$eted_money_for_the_date, 2),
                             ];
 
                         }
@@ -266,7 +243,7 @@ class UsersController extends Controller
                             }
                         }
                         //$array = array_merge($array, $bl);
-                        //asort($array);
+                        //sort($bl);
                     }
             }
                 $response = ['reports' => !empty($bl) ? $bl : null,/*'balanceList'=>$balanceList,*/
@@ -399,7 +376,6 @@ class UsersController extends Controller
     // Цена на день
     private function getDayPrice($date){
         return  Datefood::select(['zavtrak','obed','ujin'])->where(['date'=>$date])->first();
-
     }
 
 

@@ -487,31 +487,51 @@ class CreateController extends BaseController
         //var_dump($dating);
     }
 
-    public function food_select(Request $request)
+    public function food_select($date)
     {
-        $foodselect = FoodSelect::where(['date' => $request->date])->get();
-        if (!empty($foodselect)) {
-            $zavtrak = 0;
-            $obed = 0;
-            $ujin = 0;
-            foreach ($foodselect as $food) {
-                if(!empty($food)){
-                    if ($food->zavtrak == 1)
-                        $zavtrak++;
-                    if ($food->obed == 1)
-                        $obed++;
-                    if ($food->ujin == 1)
-                        $ujin++;
+        $users = Users::where(['isAdmin' => 0,'isActive'=>1])->get();
+        $price = $this->getDayPrice($date);
+        if(!empty($users))
+        $c_zavtrak=0;$c_obed=0;$c_ujin=0;
+            foreach ($users as $user){
+            $foodselect = FoodSelect::where(['date' => $date,'user_id'=>$user->id])->first();
+
+                if(!empty($foodselect->zavtrak)){
+                    if($foodselect->zavtrak==1)
+                        $c_zavtrak++;
                 }
-            }
-            !empty($foodselect) ? $price = $this->getDayPrice($request->date) : $price=0;
-
-            //!empty($foodselect) ? $summa = (!is_null($zavtrak) ? $zavtrak : 0 * !is_null($price->zavtrak) ? $price->zavtrak : 0) + (!is_null($obed) ? $obed : 0 * !is_null($price->obed) ? $price->obed : 0 ) + (!is_null($ujin) ? $ujin : 0 * !is_null($price->ujin) ? $price->ujin : 0 ) : 0;
-            !empty($price) ? $summa = (!is_null($zavtrak) ? $zavtrak : 0 * !is_null($price->zavtrak) ? $price->zavtrak : 0) + (!is_null($obed) ? $obed : 0 * !is_null($price->obed) ? $price->obed : 0 ) + (!is_null($ujin) ?$ujin : 0 * !is_null($price->ujin) ? $price->ujin : 0 ) : $summa=0;
-
-            $response = ['count_zavtrak' => $zavtrak, 'count_obed' => $obed, 'count_ujin' => $ujin,'sena_zavtrak'=>!empty($price->zavtrak) ? $price->zavtrak : 0, 'sena_obed'=>!empty($price->obed) ? $price->obed : 0,'sena_ujin'=>!empty($price->ujin) ? $price->ujin : 0,
-                'summa' =>/*($zavtrak*$price->zavtrak)+($obed*$price->obed)+($ujin*$price->ujin)*/ $summa ];
-        } else $response = ['error' => true, 'message' => 'Date is empty in database'];
+                if(!empty($foodselect->obed)){
+                    if($foodselect->obed==1)
+                        $c_obed++;
+                }
+                if(!empty($foodselect->ujin)){
+                    if($foodselect->ujin==1)
+                        $c_ujin++;
+                }
+            $array[]=[
+                'fio'=>$user->fname.' '.$user->name.' '.$user->lname,
+                'zavtrak'=>!empty($foodselect->zavtrak) ? $foodselect->zavtrak : 0,
+                'obed'=>!empty($foodselect->obed) ? $foodselect->obed : 0,
+                'ujin'=>!empty($foodselect->ujin) ? $foodselect->ujin : 0,
+                ];
+        }
+        if(!empty($price)){
+                $price_z=$price->zavtrak;
+                $price_o=$price->obed;
+                $price_u=$price->ujin;
+        }else {$price_u=0;$price_o=0;$price_z=0;}
+        $response=['array'=>!empty($array) ? $array : 0,
+            'count_zavtrak'=>$c_zavtrak,
+            'count_obed'=>$c_obed,
+            'count_ujin'=>$c_ujin,
+            'price_zavtrak'=>$price_z,
+            'price_obed'=>$price_o,
+            'price_ujin'=>$price_u,
+            'summa_zavtrak'=>$summa_z=$c_zavtrak*$price_z,
+            'summa_obed'=>$summa_o=$c_obed*$price_o,
+            'summa_ujin'=>$summa_u=$c_ujin*$price_u,
+            'summa'=>$summa_z+$summa_u+$summa_o,
+        ];
 
         return response($response, 202);
     }
