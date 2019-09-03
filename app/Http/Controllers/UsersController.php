@@ -98,6 +98,13 @@ class UsersController extends Controller
 
             $balanceList = $this->getBalanceList($id, $start_date, $end_date);
 
+            $eted_for_start_day=$this->checkEatedMoneyWithDate($id,$start_date);
+
+            $eted_for_end_day=$this->checkEatedMoneyWithDate($id,$end_date);
+
+            $ostatok_vhod=$oplata=$this->getBalanceSummForDay($id,$start_date);
+            $ostatok_ishod=$oplata=$this->getBalanceSummForDay($id,$end_date);
+
             //eated_money
             $eated_money = $this->checkEatedMoney($id);
 
@@ -247,7 +254,7 @@ class UsersController extends Controller
                     }
             }
                 $response = ['reports' => !empty($bl) ? $bl : null,/*'balanceList'=>$balanceList,*/
-                    'date_start' => $this->formatDay($start_date), 'ishodyawiy_ostatok' => $eated_money, 'end_date' => $this->formatDay($end_date), 'v_ostatok' => $balanceCurrent - $eated_money,];
+                    'date_start' => $this->formatDay($start_date), 'ishodyawiy_ostatok' => $ostatok_vhod-$eted_for_start_day, 'end_date' => $this->formatDay($end_date), 'v_ostatok' => $ostatok_ishod-$eted_for_end_day,];
 
 
 
