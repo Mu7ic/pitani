@@ -519,7 +519,8 @@ class CreateController extends BaseController
                 $price_z=$price->zavtrak;
                 $price_o=$price->obed;
                 $price_u=$price->ujin;
-        }else {$price_u=0;$price_o=0;$price_z=0;}
+                $bool=true;
+        }else {$price_u=0;$price_o=0;$price_z=0;$bool=false;}
         $response=['array'=>!empty($array) ? $array : 0,
             'count_zavtrak'=>$c_zavtrak,
             'count_obed'=>$c_obed,
@@ -531,6 +532,7 @@ class CreateController extends BaseController
             'summa_obed'=>$summa_o=$c_obed*$price_o,
             'summa_ujin'=>$summa_u=$c_ujin*$price_u,
             'summa'=>$summa_z+$summa_u+$summa_o,
+            'isCreated'=>$bool,
         ];
 
         return response($response, 202);
