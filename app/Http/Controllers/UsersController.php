@@ -254,7 +254,7 @@ class UsersController extends Controller
                     }
             }
                 $response = ['reports' => !empty($bl) ? $bl : null,/*'balanceList'=>$balanceList,*/
-                    'date_start' => $this->formatDay($start_date), 'ishodyawiy_ostatok' => $ostatok_vhod-$eted_for_start_day, 'end_date' => $this->formatDay($end_date), 'v_ostatok' => $ostatok_ishod-$eted_for_end_day,];
+                    'date_start' => $this->formatDay($start_date), 'ishodyawiy_ostatok' => round($ostatok_vhod-$eted_for_start_day,2), 'end_date' => $this->formatDay($end_date), 'v_ostatok' => round($ostatok_ishod-$eted_for_end_day,2)];
 
 
 

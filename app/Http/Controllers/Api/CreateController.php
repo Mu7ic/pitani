@@ -528,10 +528,10 @@ class CreateController extends BaseController
             'sena_zavtrak'=>$price_z,
             'sena_obed'=>$price_o,
             'sena_ujin'=>$price_u,
-            'summa_zavtrak'=>$summa_z=$c_zavtrak*$price_z,
-            'summa_obed'=>$summa_o=$c_obed*$price_o,
-            'summa_ujin'=>$summa_u=$c_ujin*$price_u,
-            'summa'=>$summa_z+$summa_u+$summa_o,
+            'summa_zavtrak'=>$summa_z=round($c_zavtrak*$price_z,2),
+            'summa_obed'=>$summa_o=round($c_obed*$price_o,2),
+            'summa_ujin'=>$summa_u=round($c_ujin*$price_u,2),
+            'summa'=>round($summa_z+$summa_u+$summa_o,2),
             'isCreated'=>$bool,
         ];
 
