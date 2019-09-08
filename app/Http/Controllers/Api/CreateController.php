@@ -150,9 +150,9 @@ class CreateController extends BaseController
     {
         if ($request->validate([
             'date' => 'required|date',
-            'zavtrak' => 'required|integer',
-            'obed' => 'required|integer',
-            'ujin' => 'required|integer',
+            'zavtrak' => 'required|between:0,99.99',
+            'obed' => 'required|between:0,99.99',
+            'ujin' => 'required|between:0,99.99',
         ])){
             $result = $this->setFood($request);
 
@@ -183,9 +183,9 @@ class CreateController extends BaseController
         if ($request->validate([
             'date' => 'required|date',
             'user_id'=>'required|integer',
-            'zavtrak' => 'required|between:0,9999.99',
-            'obed' => 'required|between:0,9999.99',
-            'ujin' => 'required|between:0,9999.99',
+            'zavtrak' => 'integer',
+            'obed' => 'integer',
+            'ujin' => 'integer',
         ]))
             $result = $this->setFoodDay($request);
         $date=$request->get('date');
@@ -298,9 +298,9 @@ class CreateController extends BaseController
     {
 
         if ($request->validate([
-            'zavtrak' => 'required|integer',
-            'obed' => 'required|integer',
-            'ujin' => 'required|integer',
+            'zavtrak' => 'required|between:0,99.99',
+            'obed' => 'required|between:0,99.99',
+            'ujin' => 'required|between:0,99.99',
         ])) {
             $zavtrak = $request->get('zavtrak');
             $obed = $request->get('obed');
