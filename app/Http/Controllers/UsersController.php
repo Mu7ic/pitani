@@ -13,7 +13,18 @@ class UsersController extends Controller
 {
 
     public function users(){
-        return Users::select(['id','name','fname','lname','fio_parents','phone_parents'])->where(['isAdmin'=>0,'isActive'=>1])->get();
+        $users=Users::select(['id','name','fname','lname','fio_parents','phone_parents'])->where(['isAdmin'=>0,'isActive'=>1])->get();
+        foreach ($users as $user){
+
+            $response[]=['id'=>$user->id,
+                         'name'=>$user->name,
+                         'fname'=>$user->fname,
+                         'lname'=>$user->lname,
+                         'fio_parents'=>$user->fio_parents,
+                         'phone_parents'=>$user->phone_parents,
+                         'balance'=>round($this->balance($user->id),2)];
+        }
+        return response($response,202);
     }
     //Список пополнения
     public function balance_list(){
