@@ -12,6 +12,7 @@ use App\BalanceHistory;
 use App\Datefood;
 use App\FoodSelect;
 use Carbon\Traits\Date;
+use Egulias\EmailValidator\EmailLexer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Users;
@@ -51,7 +52,8 @@ class CreateController extends BaseController
             'lname' => '',
             'fio_parents' => 'required|string',
             'phone_parents' => 'required|integer',
-            //'password' => 'required|string',
+            'bes_zavtrak'=>'required|integer',
+            'bes_obed'=>'required|integer',
 
         ]))
 
@@ -241,9 +243,10 @@ class CreateController extends BaseController
             'phone_parents' => $request->get('phone_parents'),
             'remember_token' => Str::random(32),
             'password' => md5($request->get('password')),
-            'balance' => 0,
             'isAdmin' => 0,
             'isActive' => 1,
+            'bes_zavtrak' => 0,
+            'bes_obed' => 0,
             'created_at' => date("Y-m-d H:i:s"),
             'update_at' => date("Y-m-d H:i:s"),
         ]);
@@ -254,6 +257,13 @@ class CreateController extends BaseController
     //Создаем пользователя
     private function updateUsers($request)
     {
+        if($request->get('bes_zavtrak')==true)
+            $bes_zavtrak=1;
+        else $bes_zavtrak=0;
+        if($request->get('bes_obed'))
+            $bes_obed=1;
+        else $bes_obed=0;
+
         $sub=Users::find($request->get('id'));
         if(!$sub==null){
             $sub->name=$request->get('name');
@@ -261,8 +271,8 @@ class CreateController extends BaseController
             $sub->lname=$request->get('lname');
             $sub->fio_parents=$request->get('fio_parents');
             $sub->phone_parents=$request->get('phone_parents');
-            //$sub->password=md5($request->get('password'));
-
+            $sub->bes_zavtrak= $bes_zavtrak;
+            $sub->bes_obed=$bes_obed;
         }else
             return false;
 
@@ -275,6 +285,7 @@ class CreateController extends BaseController
     private function setFood($request)
     {
         $date = $request->get('date');
+        $this->checkFreeFood($date);
         $zavtrak = $request->get('zavtrak');
         $obed = $request->get('obed');
         $ujin = $request->get('ujin');
@@ -292,6 +303,26 @@ class CreateController extends BaseController
             return true;
         }
         return false;
+    }
+
+    private function checkFreeFood($date){
+        $users=Users::where('bes_zavtrak',1)->orWhere('bes_obed',1)->where('isAdmin',0)->get();
+        foreach ($users as $user){
+            $this->updateFreeFood($user->id,$date,$user->bes_zavtrak,$user->bes_obed);
+        }
+    }
+
+    private function updateFreeFood($userId,$date,$zavtrak=null,$obed=null){
+        $food=FoodSelect::where(['user_id'=>$userId,'date'=>$date])->first();
+        if(!empty($food)){
+            if ($zavtrak == 1)
+                $food->zavtrak = 2;
+            if ($obed == 1)
+                $food->obed = 2;
+            if ($food->save())
+                return 1;
+        }
+        return 0;
     }
 
     public function food_day_update($date, Request $request)
@@ -492,21 +523,29 @@ class CreateController extends BaseController
         $users = Users::where(['isAdmin' => 0,'isActive'=>1])->get();
         $price = $this->getDayPrice($date);
         if(!empty($users))
-        $c_zavtrak=0;$c_obed=0;$c_ujin=0;
+        $c_zavtrak=0;$c_obed=0;$c_ujin=0;$b_zavtrak=0;$b_obed=0;$b_ujin=0;
             foreach ($users as $user){
             $foodselect = FoodSelect::where(['date' => $date,'user_id'=>$user->id])->first();
 
                 if(!empty($foodselect->zavtrak)){
                     if($foodselect->zavtrak==1)
                         $c_zavtrak++;
+                    if($foodselect->zavtrak==2)
+                        $b_zavtrak++;
+
                 }
+
                 if(!empty($foodselect->obed)){
                     if($foodselect->obed==1)
                         $c_obed++;
+                    if($foodselect->obed==2)
+                        $b_obed++;
                 }
                 if(!empty($foodselect->ujin)){
                     if($foodselect->ujin==1)
                         $c_ujin++;
+                    if($foodselect->ujin==2)
+                        $b_ujin++;
                 }
             $array[]=[
                 'fio'=>$user->fname.' '.$user->name.' '.$user->lname,
@@ -525,6 +564,9 @@ class CreateController extends BaseController
             'count_zavtrak'=>$c_zavtrak,
             'count_obed'=>$c_obed,
             'count_ujin'=>$c_ujin,
+            'bes_zavtrak'=>$b_zavtrak,
+            'bes_obed'=>$b_obed,
+            'bes_ujin'=>$b_ujin,
             'sena_zavtrak'=>$price_z,
             'sena_obed'=>$price_o,
             'sena_ujin'=>$price_u,
