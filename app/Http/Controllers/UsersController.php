@@ -47,6 +47,8 @@ class UsersController extends Controller
                 'lname'=>$user->lname,
                 'fio_parents'=>$user->fio_parents,
                 'phone_parents'=>$user->phone_parents,
+                'bes_zavtrak'=>$user->bes_zavtrak,
+                'bes_obed'=>$user->bes_obed,
             ];
         return response($response,202);
     }
