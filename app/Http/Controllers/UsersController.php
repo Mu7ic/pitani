@@ -65,10 +65,9 @@ class UsersController extends Controller
     public function food_select_user($user_id,$date)
     {
         $foodselect = FoodSelect::select(['id','user_id','date','zavtrak','obed','ujin'])->where(['user_id' => $user_id,'date'=>$date])->first();
-
+        $user=Users::find($user_id);
         if(!empty($foodselect)){
-
-            $response=['error'=>false,'data'=>$foodselect];
+            $response=['error'=>false,'data'=>$foodselect,'bes_zavtrak'=>$user->bes_zavtrak,'bes_obed'=>$user->bes_obed];
         }else
             $response = ['error' => true, 'message' => 'Date is empty in database'];
 
