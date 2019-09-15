@@ -69,6 +69,7 @@ class CreateController extends BaseController
 
     public function user_delete(Request $request){
         if ($request->validate([
+
             'id'=>'required|integer',
         ]))
             $del=$this->deleteUsers($request->get('id'));
@@ -285,24 +286,83 @@ class CreateController extends BaseController
     private function setFood($request)
     {
         $date = $request->get('date');
-        $this->checkFreeFood($date);
+
         $zavtrak = $request->get('zavtrak');
         $obed = $request->get('obed');
         $ujin = $request->get('ujin');
-        if(empty(Datefood::where(['date'=>$date])->first())){
-        $food = new Datefood([
-            'date' => $date,
-            'zavtrak' => $zavtrak,
-            'obed' => $obed,
-            'ujin' => $ujin,
-            'created_at' => date("Y-m-d H:i:s"),
-            'update_at' => date("Y-m-d H:i:s"),
-        ]);
+        if (empty(Datefood::where(['date' => $date])->first())) {
+            $food = new Datefood([
+                'date' => $date,
+                'zavtrak' => $zavtrak,
+                'obed' => $obed,
+                'ujin' => $ujin,
+                'created_at' => date("Y-m-d H:i:s"),
+                'update_at' => date("Y-m-d H:i:s"),
+            ]);
 
-        if ($food->save())
-            return true;
+            if ($food->save()) {
+                //$this->checkFreeFood($date);
+                //$this->setSummTheDate($date);
+                return true;
+            }
         }
         return false;
+    }
+
+
+    public function food_day_update($date, Request $request)
+    {
+
+        if ($request->validate([
+            'zavtrak' => 'required|between:0,99.99',
+            'obed' => 'required|between:0,99.99',
+            'ujin' => 'required|between:0,99.99',
+        ])) {
+            $zavtrak = $request->get('zavtrak');
+            $obed = $request->get('obed');
+            $ujin = $request->get('ujin');
+
+            $food = Datefood::where('date', $date)->first();
+            $food->zavtrak = $zavtrak;
+            $food->obed = $obed;
+            $food->ujin = $ujin;
+            $food->updated_at = date("Y-m-d H:i:s");
+            if ($food->save()) {
+                //$this->checkFreeFood($date);
+                //$this->setSummTheDate($date);
+                return response(['error' => false, 'message' => 'The date is updated'], 200);
+            }
+        }
+        return response(['error' => true, 'message' => 'Check the data please'], 200);
+    }
+
+
+    private function setSummTheDate($date)
+    {
+        $foods = FoodSelect::where(['date' => $date])->get();
+        $price = $this->getDayPrice($date);
+
+        foreach ($foods as $food) {
+            $summa = 0;
+            if (!empty($food)) {
+                if ($food->zavtrak == 1)
+                    $summa = $summa + $price->zavtrak;
+
+                if ($food->obed == 1)
+                    $summa = $summa + $price->obed;
+
+                if ($food->ujin == 1)
+                    $summa = $summa + $price->ujin;
+
+                $this->updateTheFood($food->id,round($summa,2));
+            }
+        }
+    }
+
+    private function updateTheFood($id,$summa){
+        $food=FoodSelect::find($id);
+        $food->summa=$summa;
+        $food->save();
     }
 
     private function checkFreeFood($date){
@@ -323,28 +383,6 @@ class CreateController extends BaseController
                 return 1;
         }
         return 0;
-    }
-
-    public function food_day_update($date, Request $request)
-    {
-
-        if ($request->validate([
-            'zavtrak' => 'required|between:0,99.99',
-            'obed' => 'required|between:0,99.99',
-            'ujin' => 'required|between:0,99.99',
-        ])) {
-            $zavtrak = $request->get('zavtrak');
-            $obed = $request->get('obed');
-            $ujin = $request->get('ujin');
-            $food = Datefood::where('date', $date)->first();
-            $food->zavtrak = $zavtrak;
-            $food->obed = $obed;
-            $food->ujin = $ujin;
-            $food->updated_at= date("Y-m-d H:i:s");
-            if ($food->save())
-                return response(['error' => false, 'message' => 'The date is updated'], 200);
-        }
-        return response(['error' => true, 'message' => 'Check the data please'], 200);
     }
 
    // Пополнения счета пользователя
